@@ -11,6 +11,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 )
 
@@ -82,6 +83,13 @@ func (e ErrOp) Error() string {
 // Get return position of `const op` in source code
 func Get(filenames string) (ops []Op, err error) {
 	const op = "Get"
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%w\n%v\n%s", err, r, string(debug.Stack()))
+		}
+	}()
+
 	var filename string
 	{
 		var files []string
