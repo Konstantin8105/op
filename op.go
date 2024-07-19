@@ -86,7 +86,8 @@ func Get(filenames string) (ops []Op, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%w\n%v\n%s", err, r, string(debug.Stack()))
+			err = errors.Join(err,
+				fmt.Errorf("%v\n%s", r, string(debug.Stack())))
 		}
 	}()
 
