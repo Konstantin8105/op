@@ -37,3 +37,32 @@ func Test(t *testing.T) {
 		t.Logf("%s", m)
 	})
 }
+
+func TestGet(t *testing.T) {
+	for _, file := range []string{
+		"op.go",
+		"./testdata/",
+	} {
+		t.Run(file, func(t *testing.T) {
+			ops, err := op.Get(file)
+			if err != nil {
+				t.Logf("%v", err)
+			}
+			for i := range ops {
+				t.Logf("%s", ops[i])
+			}
+		})
+	}
+	t.Run("file.invalid", func(t *testing.T) {
+		_, err := op.Get("wrong file name")
+		if err == nil {
+			t.Fatalf("strange")
+		}
+	})
+}
+
+func TestCode(t *testing.T) {
+	if op.Code(-1).String() != op.Undefined.String() {
+		t.Fatalf("not valid name")
+	}
+}

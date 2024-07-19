@@ -2,6 +2,8 @@
 
 package main
 
+import "fmt"
+
 func func1() (err error) {
 	const op = "func1"
 	return
@@ -12,6 +14,8 @@ func Func2(f2 string) (err error) {
 	return
 }
 
+const op = "s"
+
 type st struct{}
 
 func (s st) func1() (err error) {
@@ -21,6 +25,9 @@ func (s st) func1() (err error) {
 
 func (s st) Func2(f2 string) (err error) {
 	op = "st.Func2"
+
+	fmt.Println(op)
+
 	return
 }
 

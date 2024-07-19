@@ -14,6 +14,18 @@ import (
 	"strings"
 )
 
+// Op is position `const op`
+type Op struct {
+	Pos  Position
+	Name string
+}
+
+func (o Op) String() string {
+	const op = "Op.String"
+	_ = op
+	return fmt.Sprintf("%s find op with name `%s`", o.Pos, o.Name)
+}
+
 // Code of error
 type Code int
 
@@ -38,27 +50,38 @@ func (c Code) String() string {
 	return "undefined error code value"
 }
 
-// ErrOp is typical struct of error output
-type ErrOp struct {
+// Position in source code
+type Position struct {
 	Filename string
 	Line     int
-	Code     Code
-	Expect   string
+}
+
+func (p Position) String() string {
+	const op = "Position.String"
+	_ = op
+	return fmt.Sprintf("%s:%d", p.Filename, p.Line)
+}
+
+// ErrOp is typical struct of error output
+type ErrOp struct {
+	Pos    Position
+	Code   Code
+	Expect string
 }
 
 func (e ErrOp) Error() string {
 	const op = "ErrOp.Error"
 	_ = op
-	out := fmt.Sprintf("%s:%d: %s", e.Filename, e.Line, e.Code)
+	out := fmt.Sprintf("%s: %s", e.Pos, e.Code)
 	if e.Expect != "" {
 		out += fmt.Sprintf(". Expect: \"%s\"", e.Expect)
 	}
 	return out
 }
 
-// Check file on correction op identification
-func Check(filenames string) (err error) {
-	const op = "Check"
+// Get return position of `const op` in source code
+func Get(filenames string) (ops []Op, err error) {
+	const op = "Get"
 	var filename string
 	{
 		var files []string
@@ -68,8 +91,13 @@ func Check(filenames string) (err error) {
 		}
 		if 1 < len(files) {
 			for _, file := range files {
-				err = errors.Join(err, Check(file))
+				op, errOp := Get(file)
+				ops = append(ops, op...)
+				err = errors.Join(err, errOp)
 			}
+			return
+		}
+		if 0 == len(files) {
 			return
 		}
 		filename = files[0]
@@ -121,6 +149,7 @@ func Check(filenames string) (err error) {
 		//    .  }
 		// }
 		var opname string
+		p := fset.Position(fd.Body.Lbrace)
 		acceptable := func() (ok bool) {
 			if fd.Body == nil {
 				return
@@ -139,6 +168,7 @@ func Check(filenames string) (err error) {
 			if !ok {
 				return
 			}
+			p = fset.Position(opg.TokPos)
 			if opg.Tok != token.CONST {
 				return
 			}
@@ -174,12 +204,13 @@ func Check(filenames string) (err error) {
 			return
 		}
 		if !acceptable() {
-			p := fset.Position(fd.Body.Lbrace)
 			err = errors.Join(err, ErrOp{
-				Filename: p.Filename,
-				Line:     p.Line,
-				Code:     NotFound,
-				Expect:   name,
+				Pos: Position{
+					Filename: p.Filename,
+					Line:     p.Line,
+				},
+				Code:   NotFound,
+				Expect: name,
 			})
 			continue
 		}
@@ -189,13 +220,22 @@ func Check(filenames string) (err error) {
 		if name != opname {
 			p := fset.Position(fd.Body.Lbrace)
 			err = errors.Join(err, ErrOp{
-				Filename: p.Filename,
-				Line:     p.Line,
-				Code:     NotSame,
-				Expect:   name,
+				Pos: Position{
+					Filename: p.Filename,
+					Line:     p.Line,
+				},
+				Code:   NotSame,
+				Expect: name,
 			})
 			continue
 		}
+		ops = append(ops, Op{
+			Pos: Position{
+				Filename: p.Filename,
+				Line:     p.Line,
+			},
+			Name: name,
+		})
 	}
 	return
 }
@@ -287,7 +327,7 @@ func Test(t interface {
 	Logf(format string, args ...any)
 }, folder string) {
 	const op = "Test"
-	err := Check(folder)
+	_, err := Get(folder)
 	if err != nil {
 		t.Errorf("%s. %v", op, err)
 		return
