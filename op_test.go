@@ -54,6 +54,12 @@ func TestGet(t *testing.T) {
 			}
 		})
 	}
+	t.Run("file.zero", func(t *testing.T) {
+		_, err := op.Get("")
+		if err == nil {
+			t.Fatalf("strange")
+		}
+	})
 	t.Run("file.invalid", func(t *testing.T) {
 		_, err := op.Get("wrong file name")
 		if err == nil {
