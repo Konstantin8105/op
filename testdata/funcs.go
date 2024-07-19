@@ -20,7 +20,7 @@ func (s st) func1() (err error) {
 }
 
 func (s st) Func2(f2 string) (err error) {
-	const op = "st.Func2"
+	op = "st.Func2"
 	return
 }
 
@@ -30,10 +30,21 @@ func (s *st) func3() (err error) {
 }
 
 func (s *st) Func4(f2 string) (err error) {
-	const op = "st.Func4"
+	const op = "*st.Func4"
 	return
 }
 
-func main() {
+func (s st) none() {}
 
+func (s st) full() {
+	const oper = "st.full"
+	var f func()
+	f = func() {}
+	_ = f
+}
+
+func main() {
+	var f func()
+	f = func() {}
+	_ = f
 }
