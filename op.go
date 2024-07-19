@@ -218,7 +218,6 @@ func Get(filenames string) (ops []Op, err error) {
 			continue
 		}
 		if name != opname {
-			p := fset.Position(fd.Body.Lbrace)
 			err = errors.Join(err, ErrOp{
 				Pos: Position{
 					Filename: p.Filename,
