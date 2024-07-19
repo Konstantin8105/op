@@ -1,6 +1,7 @@
 package op_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -13,7 +14,7 @@ type mockTest struct {
 }
 
 func (m *mockTest) Errorf(format string, args ...any) {
-	m.res = fmt.Errorf(format, args...)
+	m.res = errors.Join(m.res, fmt.Errorf(format, args...))
 }
 
 func (m *mockTest) Logf(format string, args ...any) {
