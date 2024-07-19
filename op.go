@@ -1,4 +1,7 @@
-package opconst
+// Package op check in each function first line for operation identification:
+//
+//	const op = "function_name"
+package op
 
 import (
 	"errors"
@@ -11,8 +14,10 @@ import (
 	"strings"
 )
 
+// Code of error
 type Code int
 
+// codes of errors
 const (
 	Undefined Code = iota
 	NotFound
@@ -20,6 +25,9 @@ const (
 )
 
 func (c Code) String() string {
+	const op = "Code.String"
+	_ = op
+
 	switch c {
 	case NotFound:
 		return "not found constant `op`"
@@ -30,6 +38,7 @@ func (c Code) String() string {
 	return "undefined error code value"
 }
 
+// ErrOp is typical struct of error output
 type ErrOp struct {
 	Filename string
 	Line     int
@@ -38,9 +47,16 @@ type ErrOp struct {
 }
 
 func (e ErrOp) Error() string {
-	return fmt.Sprintf("%s:%d: %s.%s", e.Filename, e.Line, e.Code, e.Expect)
+	const op = "ErrOp.Error"
+	_ = op
+	out := fmt.Sprintf("%s:%d: %s", e.Filename, e.Line, e.Code)
+	if e.Expect != "" {
+		out += fmt.Sprintf(". Expect: \"%s\"", e.Expect)
+	}
+	return out
 }
 
+// Check file on correction op identification
 func Check(filenames string) (err error) {
 	const op = "Check"
 	var filename string
@@ -176,7 +192,7 @@ func Check(filenames string) (err error) {
 				Filename: p.Filename,
 				Line:     p.Line,
 				Code:     NotSame,
-				Expect:   fmt.Sprintf("`%s` != `%s`", name, opname),
+				Expect:   name,
 			})
 			continue
 		}
@@ -185,6 +201,9 @@ func Check(filenames string) (err error) {
 }
 
 func toName(fs ...*ast.Field) (name string) {
+	const op = "toName"
+	_ = op
+
 	var ef func(ast.Expr) string
 	ef = func(e ast.Expr) (name string) {
 		switch v := e.(type) {
@@ -195,7 +214,6 @@ func toName(fs ...*ast.Field) (name string) {
 		}
 		return
 	}
-
 	for i := range fs {
 		name = ef(fs[i].Type) + "." + name
 	}
@@ -210,7 +228,7 @@ var (
 
 // paths return only filenames with specific suffix
 func paths(paths ...string) (files []string, err error) {
-	const op = "Path"
+	const op = "paths"
 
 	defer func() {
 		if err != nil {
@@ -263,6 +281,7 @@ func paths(paths ...string) (files []string, err error) {
 	return
 }
 
+// Test function for easy create implemetation in project
 func Test(t interface {
 	Errorf(format string, args ...any)
 	Logf(format string, args ...any)
